@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Type;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TypeController extends Controller
 {
@@ -14,18 +16,11 @@ class TypeController extends Controller
      */
     public function index()
     {
-        return view('admin.types.index');
+        $types = Type::all();
+        return view('admin.types.index', compact('types'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -35,7 +30,14 @@ class TypeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // dd($request->all());    
+        $data = $request->validate([
+            'name' => ['required', 'unique:types']
+        ]);
+        $data['slug'] = Str::slug($data['name'], '-');
+        $type = Type::create($data);
+
+        return redirect()->back()->with('message', "$type->name was added");
     }
 
     /**
@@ -44,21 +46,14 @@ class TypeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Type $type)
     {
-        //
+
+        $types = Type::all();
+        return view('admin.types.show', compact('type', 'types'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
+
 
     /**
      * Update the specified resource in storage.
@@ -67,9 +62,15 @@ class TypeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Type $type)
     {
-        //
+        $data = $request->validate([
+            'name' => ['required', 'unique:types']
+        ]);
+        $data['slug'] = Str::slug($data['name'], '-');
+        $type->update($data);
+
+        return redirect()->back()->with('message', "$type->name was updated");
     }
 
     /**
@@ -78,8 +79,11 @@ class TypeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Type $type)
     {
-        //
+        // var_dump('type');
+        // dd($type->name);
+        $type->delete();
+        return redirect()->back()->with('message', "$type->name was deleted");
     }
 }
